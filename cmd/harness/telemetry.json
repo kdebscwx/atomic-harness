@@ -1,0 +1,1 @@
+{"event_type":1,"unix_timestamp_nsec":1697145883318113300,"fileuid":{},"filepath":"\\\\.\\pipe\\TestSVC","process":{"uniquepid":3940649673969399,"pid":12216,"create_time":1697145881448755700},"create_mode_flags":2,"meta":{"name":"FileMod","event_type":5,"unix_timestamp_nsec":1697145883318113300,"platform":1,"endpoint_version":"1.2.36"}}

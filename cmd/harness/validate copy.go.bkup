@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"runtime"
 	"strings"
 
 	types "github.com/secureworks/atomic-harness/pkg/types"
@@ -128,16 +127,16 @@ func CheckFileEvent(testRun *SingleTestRun, evt *types.SimpleEvent, nativeJsonSt
 		if IsGoArtWorkDirEvent(testRun, evt) {
 			return retval
 		}
-		if 0 == testRun.TimeWorkDirCreate || 0 != testRun.TimeWorkDirDelete {
-			if 0 != testRun.TimeWorkDirDelete && evt.Timestamp <= testRun.TimeWorkDirDelete {
-				// we want this
-			} else {
-				if gVerbose {
-					fmt.Println("Ignoring event before/after goartrun working dir event", nativeJsonStr)
-				}
-				return retval
-			}
-		}
+		// if 0 == testRun.TimeWorkDirCreate || 0 != testRun.TimeWorkDirDelete {
+		// 	if 0 != testRun.TimeWorkDirDelete && evt.Timestamp <= testRun.TimeWorkDirDelete {
+		// 		// we want this
+		// 	} else {
+		// 		if gVerbose {
+		// 			fmt.Println("Ignoring event before/after goartrun working dir event", nativeJsonStr)
+		// 		}
+		// 		return retval
+		// 	}
+		// }
 	}
 
 	for _, exp := range testRun.criteria.ExpectedEvents {
@@ -152,7 +151,7 @@ func CheckFileEvent(testRun *SingleTestRun, evt *types.SimpleEvent, nativeJsonSt
 
 		switch strings.ToUpper(exp.SubType) {
 		case "WRITE":
-			isMatchingSubtype = action == types.SimpleFileActionOpenWrite || action == types.SimpleFileActionRename || action == types.SimpleFileActionCreate || action == types.SimpleFileActionWrite
+			isMatchingSubtype = action == types.SimpleFileActionOpenWrite || action == types.SimpleFileActionRename || action == types.SimpleFileActionCreate
 		case "CREAT":
 			isMatchingSubtype = action == types.SimpleFileActionOpenWrite || action == types.SimpleFileActionCreate
 		case "CREATE":
@@ -441,14 +440,14 @@ func ValidateSimpleTelemetry(testRun *SingleTestRun, tool *TelemTool) {
 
 	// load simple_telemetry.json, process each event
 
-	path := testRun.resultsDir + "/../simple_telemetry" + tool.Suffix + ".json"
+	path := testRun.resultsDir + "simple_telemetry" + tool.Suffix + ".json"
 	simpleLines, err := ReadFileLines(path)
 	if err != nil {
 		fmt.Println("ERROR: file not found", path, err)
 		return
 	}
 
-	path = testRun.resultsDir + "/../telemetry" + tool.Suffix + ".json"
+	path = testRun.resultsDir + "telemetry" + tool.Suffix + ".json"
 	rawJsonLines, err := ReadFileLines(path)
 	if err != nil {
 		fmt.Println("ERROR: file not found", path, err)
@@ -460,7 +459,7 @@ func ValidateSimpleTelemetry(testRun *SingleTestRun, tool *TelemTool) {
 	}
 
 	// write native telemetry matches to a file
-	outpath := testRun.resultsDir + "/matches" + tool.Suffix + ".json"
+	outpath := testRun.resultsDir + "matches" + tool.Suffix + ".json"
 	matchFileHandle, err := os.OpenFile(outpath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("ERROR: unable to create outfile", outpath, err)
@@ -680,12 +679,7 @@ func IsGoArtStage(testRun *SingleTestRun, cmdline string, tsNs int64) bool {
  * Side-effects: will set testRun.TimeWorkDirCreate, TimeWorkDirDelete
  */
 func IsGoArtWorkDirEvent(testRun *SingleTestRun, evt *types.SimpleEvent) bool {
-	workingDirToCompare := testRun.workingDir
-	if runtime.GOOS == "windows" {
-		// This is required since workDir starts with C:\, filemod path starts with /device/harddisk<n>
-		workingDirToCompare = strings.Replace(workingDirToCompare, "C:", "", 1)
-	}
-	if strings.HasSuffix(evt.FileFields.TargetPath, workingDirToCompare) {
+	if evt.FileFields.TargetPath == testRun.workingDir {
 		if evt.FileFields.Action == types.SimpleFileActionDelete {
 			testRun.TimeWorkDirDelete = evt.Timestamp
 		} else if evt.FileFields.Action == types.SimpleFileActionOpenRead {

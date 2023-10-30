@@ -51,6 +51,7 @@ const (
 	SimpleFileActionUnknown   SimpleFileAction = "?"
 	SimpleFileActionOpenRead  SimpleFileAction = "OPEN_READ"  // OPEN readonly or READ/ACCESS
 	SimpleFileActionOpenWrite SimpleFileAction = "OPEN_WRITE" // OPEN to modify or WRITE/UPDATE
+	SimpleFileActionWrite     SimpleFileAction = "WRITE"      // WRITE/UPDATE file
 	SimpleFileActionChmod     SimpleFileAction = "CHMOD"
 	SimpleFileActionChown     SimpleFileAction = "CHOWN"
 	SimpleFileActionDelete    SimpleFileAction = "DELETE"

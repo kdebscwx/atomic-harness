@@ -3,6 +3,7 @@ package main
 import (
 	"testing"
 
+	types "github.com/secureworks/atomic-harness/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,4 +47,39 @@ func TestFindGoArtStageRegex(t *testing.T) {
 	assert.Equal(t, "artwork-T1027.002_2-3400567469", folder)
 	assert.Equal(t, "T1027.002", technique)
 	assert.Equal(t, "test", stageName)
+}
+
+func TestValidateFileNamedPipe(t *testing.T) {
+	my_tool := TelemTool{}
+	my_tool.Suffix = ""
+
+	my_test_run := SingleTestRun{}
+	my_test_run.StartTime = 1697100000
+	my_test_run.EndTime = 1697200000
+
+	my_criteria := types.AtomicTestCriteria{}
+	my_criteria.Technique = "T1134.001"
+	my_criteria.TestIndex = 1
+	my_criteria.TestName = "Named pipe client impersonation"
+
+	my_test_run.criteria = &my_criteria
+
+	dummy_expected_events := make([]*types.ExpectedEvent, 1)
+	expected_event := types.ExpectedEvent{}
+	expected_event.Id = "1"
+	expected_event.EventType = "File"
+	expected_event.SubType = "CREATE"
+	dummy_expected_events[0] = &expected_event
+
+	named_pipe_field_criteria := make([]types.FieldCriteria, 1)
+	expected_event.FieldChecks = named_pipe_field_criteria
+	named_pipe_field_criterion := types.FieldCriteria{}
+	named_pipe_field_criterion.FieldName = "path"
+	named_pipe_field_criterion.Op = "="
+	named_pipe_field_criterion.Value = "\\\\.\\pipe\\TestSVC"
+	named_pipe_field_criteria[0] = named_pipe_field_criterion
+
+	my_criteria.ExpectedEvents = dummy_expected_events
+
+	ValidateSimpleTelemetry(&my_test_run, &my_tool)
 }
